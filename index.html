@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TPH College Portal (Offline Version)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: #f4f6fa; color: #2c3e50; }
+
+    header {
+      background: #1b263b;
+      color: #f1c40f;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #2e3a59;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    nav a, nav button {
+      color: #f1c40f;
+      padding: 15px 25px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    nav a:hover, nav button:hover {
+      background: #f1c40f;
+      color: #1b263b;
+      border-radius: 6px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 25px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #1b263b;
+      border-left: 5px solid #f1c40f;
+      padding-left: 10px;
+      margin-bottom: 10px;
+    }
+    
+    h3 {
+      margin-top: 15px;
+      margin-bottom: 10px;
+    }
+
+    input, select, button {
+      width: 85%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    
+    input[type="number"] {
+        width: 70px;
+    }
+    
+    #adminFacultyTab input, #adminFacultyTab select {
+        width: 48%;
+        display: inline-block;
+        margin: 4px 1%;
+    }
+    #adminFacultyTab button {
+        width: 98%;
+        margin: 4px 1%;
+    }
+
+    button {
+      background: #1b263b;
+      color: #f1c40f;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #f1c40f;
+      color: #1b263b;
+    }
+    
+    .small-button {
+        width: auto;
+        padding: 5px 10px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+    
+    .msg-success { color: green; }
+    .msg-error { color: crimson; }
+
+    .footer {
+      text-align: center;
+      background: #1b263b;
+      color: #f1c40f;
+      padding: 12px;
+      margin-top: 40px;
+      font-size: 14px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+      border-bottom: 2px solid #eee;
+    }
+
+    .tab-buttons button {
+      width: 30%;
+      padding: 10px;
+      border-radius: 6px 6px 0 0;
+      border: none;
+      background: #f4f6fa;
+      color: #2c3e50;
+    }
+    
+    .tab-buttons button.active {
+        background: #fff;
+        border-bottom: 2px solid #f1c40f;
+        font-weight: bold;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    
+    div#adminFacultyList {
+        overflow-x: auto;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+      min-width: 100px;
+    }
+
+    th {
+      background: #f1c40f;
+      color: #1b263b;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TPH College Portal (Offline Version)</h1>
+    <p>Centralized Academic Dashboard</p>
+  </header>
+
+  <nav>
+    <a href="#" onclick="showSection('home')">Home</a>
+    <a href="#" onclick="showSection('login')">Login</a>
+    <a href="#" onclick="showSection('studentRegister')">Student Register</a>
+    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+    <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+  </nav>
+
+  <div class="container">
+    <div id="home" class="section">
+      <h2>Welcome to TPH College Portal</h2>
+      <p>New students can register via the 'Student Register' link. Your Student ID will be generated for you.</p>
+      <p>Faculty accounts are created by the Admin.</p>
+      <p style="color: blue; margin-top: 15px;"><strong>Note:</strong> All data is saved in your browser's LocalStorage.</p>
+    </div>
+
+    <div id="login" class="section" style="display:none;">
+      <h2>Login Portal</h2>
+      <select id="role">
+        <option value="">Select Role</option>
+        <option value="student">Student</option>
+        <option value="faculty">Faculty</option>
+        <option value="admin">Admin (Teju)</option>
+      </select><br>
+      <input type="text" id="username" placeholder="Enter Email" />
+      <input type="password" id="password" placeholder="Enter Password" />
+      <button onclick="login()">Login</button>
+      <p id="loginMsg" class="msg-error"></p>
+    </div>
+    
+    <div id="studentRegister" class="section" style="display:none;">
+      <h2>Student Admission Portal</h2>
+      <input type="text" id="regName" placeholder="Enter Full Name" />
+      <input type="email" id="regEmail" placeholder="Enter your Email (e.g., name@gmail.com)" />
+      <select id="regBranch">
+          <option value="CSE">CSE</option>
+          <option value="ECE">ECE</option>
+          <option value="MECH">MECH</option>
+          <option value="CIVIL">CIVIL</option>
+      </select>
+      <button onclick="registerStudent()">Register</button>
+      <p id="studentRegisterMsg" class="msg-error"></p>
+    </div>
+    
+    <div id="dashboard" class="section" style="display:none;">
+      <h2>Welcome, <span id="userNameDisplay"></span></h2>
+      
+      <div id="userDashboard" style="display:none;">
+          <div class="tab-buttons">
+            <button id="profileBtn" onclick="showTab(this, 'profileTab')">Profile</button>
+            <button id="attendanceBtn" onclick="showTab(this, 'attendanceTab')">Attendance</button>
+            <button id="marksBtn" onclick="showTab(this, 'marksTab')">Marks</button>
+          </div>
+          <div id="profileTab" class="tab-content"></div>
+          <div id="attendanceTab" class="tab-content"></div>
+          <div id="marksTab" class="tab-content"></div>
+      </div>
+      
+      <div id="adminDashboard" style="display:none;">
+          <div class="tab-buttons">
+            <button id="adminProfileBtn" onclick="showTab(this, 'adminProfileTab')">Profile</button>
+            <button id="adminFacultyBtn" onclick="showTab(this, 'adminFacultyTab')">Manage Faculty</button>
+            <button id="adminReportsBtn" onclick="showTab(this, 'adminReportsTab')">Reports</button>
+          </div>
+          <div id="adminProfileTab" class="tab-content"></div>
+          <div id="adminFacultyTab" class="tab-content"></div>
+          <div id="adminReportsTab" class="tab-content"></div>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2025 TPH College | Developed by Students</p>
+  </div>
+
+<script>
+    // --- THIS IS YOUR "ALL-IN-ONE" DATABASE ---
+    // We will load data from LocalStorage into these variables when the page opens.
+    
+    let studentDatabase = {};
+    let studentEmailMap = {};
+    let idCounters = {};
+    let credentials = {}; // This will hold faculty and admin
+
+    // --- NEW: Database Functions ---
+    
+    // Saves the student database to the browser's memory
+    function saveStudentDatabase() {
+        localStorage.setItem('tph_studentDB', JSON.stringify(studentDatabase));
+        localStorage.setItem('tph_studentEmailMap', JSON.stringify(studentEmailMap));
+        localStorage.setItem('tph_idCounters', JSON.stringify(idCounters));
+        console.log("Student DB Saved!");
+    }
+    
+    // Saves the faculty/admin database to the browser's memory
+    function saveCredentialsDatabase() {
+        localStorage.setItem('tph_credentials', JSON.stringify(credentials));
+        console.log("Credentials DB Saved!");
+    }
+
+    // Loads ALL data when the page first opens
+    function loadDatabase() {
+        // --- Load Students ---
+        studentDatabase = JSON.parse(localStorage.getItem('tph_studentDB')) || {};
+        studentEmailMap = JSON.parse(localStorage.getItem('tph_studentEmailMap')) || {};
+        idCounters = JSON.parse(localStorage.getItem('tph_idCounters')) || { CSE: 1, ECE: 1, MECH: 1, CIVIL: 1 };
+        
+        // --- Load Credentials (Faculty/Admin) ---
+        // If no credentials exist, create the default admin
+        credentials = JSON.parse(localStorage.getItem('tph_credentials')) || {
+          faculty: {
+            "faculty@tph.edu.in": { 
+              pass: "4321", name: "Dr. Faculty", dept: "CSE",
+              phone: "555-1234", office: "A-101", subjects: ["Web Technologies"]
+            }
+          },
+          admin: { 
+            user: "teju@tph.edu.in", 
+            pass: "0000" 
+          }
+        };
+        
+        console.log("Database Loaded from LocalStorage.");
+    }
+    
+    // --- END OF DATABASE FUNCTIONS ---
+
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+      document.getElementById('loginMsg').textContent = '';
+      document.getElementById('studentRegisterMsg').textContent = '';
+    }
+
+    function registerStudent() {
+        const name = document.getElementById('regName').value;
+        const email = document.getElementById('regEmail').value.toLowerCase();
+        const branch = document.getElementById('regBranch').value;
+        const msg = document.getElementById('studentRegisterMsg');
+
+        if (!name || !email) {
+            msg.className = 'msg-error';
+            msg.textContent = "Please fill all fields.";
+            return;
+        }
+
+        if (Object.values(studentEmailMap).includes(email)) {
+            msg.className = 'msg-error';
+            msg.textContent = "This Email is already registered.";
+            return;
+        }
+        
+        // Auto-generate Student ID
+        let nextIdNum = idCounters[branch];
+        let paddedId = nextIdNum.toString().padStart(3, '0');
+        const newId = `25-${branch}-${paddedId}`;
+        idCounters[branch]++; // Increment counter
+        
+        // Add to our local database variable
+        studentDatabase[newId] = {
+            name: name,
+            branch: branch,
+            email: email,
+            attendance: [["Web Technologies", 0, 0], ["Software Engineering", 0, 0], ["AI & ML", 0, 0]],
+            marks: [["Web Technologies", 0, 0], ["Software Engineering", 0, 0], ["AI & ML", 0, 0]]
+        };
+        
+        studentEmailMap[email] = newId;
+        
+        // --- NEW: Save the updated database to LocalStorage ---
+        saveStudentDatabase();
+        
+        msg.className = 'msg-success';
+        msg.textContent = `Admission successful! Your new Student ID is: ${newId}. You can now login with your email.`;
+        
+        document.getElementById('regName').value = '';
+        document.getElementById('regEmail').value = '';
+    }
+
+    function login() {
+      const username = document.getElementById('username').value.trim().toLowerCase(); // email
+      const password = document.getElementById('password').value.trim();
+      const role = document.getElementById('role').value;
+      const msg = document.getElementById('loginMsg');
+      const logoutBtn = document.getElementById('logoutBtn');
+      msg.textContent = "";
+
+      document.getElementById('userDashboard').style.display = 'none';
+      document.getElementById('adminDashboard').style.display = 'none';
+
+      // STUDENT LOGIN (from local variable)
+      if (role === "student") {
+        if (password !== "student@123") {
+          msg.textContent = "Incorrect password. Use: student@123";
+          return;
+        }
+        
+        const studentId = studentEmailMap[username]; 
+        const student = studentDatabase[studentId];
+
+        if (student) {
+          document.getElementById('userNameDisplay').textContent = student.name;
+          document.getElementById('userDashboard').style.display = 'block';
+          loadStudentDashboard(student, studentId); // Pass ID
+          showSection('dashboard');
+          logoutBtn.style.display = "inline-block";
+          return;
+        } else {
+            msg.textContent = "Student email not found. Please register first.";
+            return;
+        }
+      }
+
+      // FACULTY LOGIN (from local variable)
+      if (role === "faculty") {
+        const facultyUser = credentials.faculty[username];
+        
+        if (facultyUser && password === facultyUser.pass) {
+          document.getElementById('userNameDisplay').textContent = facultyUser.name;
+          document.getElementById('userDashboard').style.display = 'block';
+          loadFacultyDashboard(facultyUser);
+          showSection('dashboard');
+          logoutBtn.style.display = "inline-block";
+          return;
+        }
+      }
+
+      // ADMIN LOGIN (from local variable)
+      if (role === "admin" && username === credentials.admin.user && password === credentials.admin.pass) {
+        document.getElementById('userNameDisplay').textContent = "Teju (Admin)";
+        document.getElementById('adminDashboard').style.display = 'block';
+        loadAdminDashboard();
+        showSection('dashboard');
+        logoutBtn.style.display = "inline-block";
+        return;
+      }
+
+      msg.textContent = "Invalid credentials.";
+    }
+
+    function loadStudentDashboard(student, studentId) {
+      document.getElementById('profileTab').innerHTML = `
+        <h3>👤 Profile</h3>
+        <p><strong>Name:</strong> ${student.name}</p>
+        <p><strong>ID:</strong> ${studentId}</p>
+        <p><strong>Branch:</strong> ${student.branch}</p>
+        <p><strong>Email:</strong> ${student.email}</p>
+      `;
+      document.getElementById('attendanceTab').innerHTML = `
+        <h3>📅 Attendance Record</h3>
+        <table>
+          <tr><th>Subject</th><th>Attended</th><th>Total</th><th>%</th></tr>
+          ${student.attendance.map(a => `<tr><td>${a[0]}</td><td>${a[1]}</td><td>${a[2]}</td><td>${a[2] > 0 ? ((a[1]/a[2])*100).toFixed(1) : 0}%</td></tr>`).join('')}
+        </table>
+      `;
+      document.getElementById('marksTab').innerHTML = `
+        <h3>📊 Marks Summary</h3>
+        <table>
+          <tr><th>Subject</th><th>Mid</th><th>Assignment</th><th>Total</th></tr>
+          ${student.marks.map(m => `<tr><td>${m[0]}</td><td>${m[1]}</td><td>${m[2]}</td><td>${m[1]+m[2]}/50</td></tr>`).join('')}
+        </table>
+      `;
+      showTab(document.getElementById('profileBtn'), 'profileTab');
+    }
+
+    function loadFacultyDashboard(facultyUser) {
+      document.getElementById('profileTab').innerHTML = `
+        <h3>👤 Profile</h3>
+        <p><strong>Name:</strong> ${facultyUser.name}</p>
+        <p><strong>Department:</strong> ${facultyUser.dept}</p>
+        <p><strong>Email:</strong> ${Object.keys(credentials.faculty).find(key => credentials.faculty[key] === facultyUser)}</p>
+        <p><strong>Phone:</strong> ${facultyUser.phone || 'N/A'}</p>
+        <p><strong>Office:</strong> ${facultyUser.office || 'N/A'}</p>
+        <p><strong>Subjects:</strong> ${facultyUser.subjects ? facultyUser.subjects.join(', ') : 'N/A'}</p>
+      `;
+      document.getElementById('attendanceTab').innerHTML = `
+        <h3>📅 Update Student Attendance</h3>
+        <input type="text" id="facultyStudentId_att" placeholder="Enter Student ID" style="width: 70%;">
+        <button onclick="findStudentForAttendance()" style="width: 25%;">Find Student</button>
+        <div id="facultyAttendanceUpdate"></div>
+      `;
+      document.getElementById('marksTab').innerHTML = `
+        <h3>📊 Update Student Marks</h3>
+        <input type="text" id="facultyStudentId_marks" placeholder="Enter Student ID" style="width: 70%;">
+        <button onclick="findStudentForMarks()" style="width: 25%;">Find Student</button>
+        <div id="facultyMarksUpdate"></div>
+      `;
+      showTab(document.getElementById('profileBtn'), 'profileTab');
+    }
+    
+    function findStudentForAttendance() {
+        const studentId = document.getElementById('facultyStudentId_att').value.toUpperCase();
+        const student = studentDatabase[studentId]; // Get from our local variable
+        const container = document.getElementById('facultyAttendanceUpdate');
+        
+        if (!student) {
+            container.innerHTML = `<p class="msg-error">Student not found.</p>`;
+            return;
+        }
+        
+        container.innerHTML = `
+            <h4>Updating Attendance for: ${student.name} (${studentId})</h4>
+            <table>
+              <tr><th>Subject</th><th>Attended</th><th>Total</th><th>Action</th></tr>
+              ${student.attendance.map((a, index) => `
+                <tr>
+                  <td>${a[0]}</td>
+                  <td>${a[1]}</td>
+                  <td>${a[2]}</td>
+                  <td>
+                    <button class="small-button" onclick="markPresent('${studentId}', ${index})">+ Present</button>
+                  </td>
+                </tr>`).join('')}
+            </table>
+        `;
+    }
+    
+    function markPresent(studentId, subjectIndex) {
+        const student = studentDatabase[studentId];
+        if (student) {
+            student.attendance[subjectIndex][0]++; // attended
+            student.attendance[subjectIndex][1]++; // total
+            
+            // --- NEW: Save the change ---
+            saveStudentDatabase();
+            
+            findStudentForAttendance(); // Refresh the faculty view
+        }
+    }
+    
+    function findStudentForMarks() {
+        const studentId = document.getElementById('facultyStudentId_marks').value.toUpperCase();
+        const student = studentDatabase[studentId]; // Get from local variable
+        const container = document.getElementById('facultyMarksUpdate');
+        
+        if (!student) {
+            container.innerHTML = `<p class="msg-error">Student not found.</p>`;
+            return;
+        }
+        
+        let tableHtml = `
+            <h4>Updating Marks for: ${student.name} (${studentId})</h4>
+            <table>
+              <tr><th>Subject</th><th>Mid (30)</th><th>Assignment (20)</th></tr>
+              ${student.marks.map((m, index) => `
+                <tr>
+                  <td>${m[0]}</td>
+                  <td><input type="number" id="mid_${studentId}_${index}" value="${m[1]}" max="30"></td>
+                  <td><input type="number" id="assign_${studentId}_${index}" value="${m[2]}" max="20"></td>
+                </tr>`).join('')}
+            </table>
+            <button onclick="updateStudentMarks('${studentId}')" style="width: 98%;">Save All Marks</button>
+            <p id="marksUpdateMsg" class="msg-success"></p>
+        `;
+        container.innerHTML = tableHtml;
+    }
+    
+    function updateStudentMarks(studentId) {
+        const student = studentDatabase[studentId];
+        if (student) {
+            student.marks.forEach((m, index) => {
+                const midVal = document.getElementById(`mid_${studentId}_${index}`).value;
+                const assignVal = document.getElementById(`assign_${studentId}_${index}`).value;
+                student.marks[index][1] = parseInt(midVal) || 0;
+                student.marks[index][2] = parseInt(assignVal) || 0;
+            });
+            
+            // --- NEW: Save the change ---
+            saveStudentDatabase();
+            
+            document.getElementById('marksUpdateMsg').textContent = "Marks updated successfully!";
+        }
+    }
+
+    // --- Admin Functions (Updated) ---
+    function loadAdminDashboard() {
+      document.getElementById('adminProfileTab').innerHTML = `<h3>👤 Admin Profile</h3><p>Welcome, Teju!</p>`;
+      
+      document.getElementById('adminFacultyTab').innerHTML = `
+        <h3>Add New Faculty</h3>
+        <input type="text" id="adminFacultyName" placeholder="Enter Full Name" />
+        <input type="email" id="adminFacultyEmail" placeholder="Enter Faculty Email" />
+        <input type="password" id="adminFacultyPass" placeholder="Temporary Password" />
+        <select id="adminFacultyDept">
+            <option value="CSE">CSE</option><option value="ECE">ECE</option>
+            <option value="MECH">MECH</option><option value="CIVIL">CIVIL</option>
+        </select>
+        <input type="text" id="adminFacultyPhone" placeholder="Phone Number" />
+        <input type="text" id="adminFacultyOffice" placeholder="Office (e.g., B-204)" />
+        <input type="text" id="adminFacultySubjects" placeholder="Subjects (comma-separated)" />
+        
+        <button onclick="adminAddFaculty()">Add Faculty</button>
+        <p id="adminFacultyMsg" class="msg-error"></p>
+        
+        <h3>Existing Faculty</h3>
+        <div id="adminFacultyList"></div>
+      `;
+      
+      document.getElementById('adminReportsTab').innerHTML = `<h3>📊 System Reports</h3><p>System-wide reports will be shown here.</p>`;
+      
+      loadFacultyList();
+      showTab(document.getElementById('adminProfileBtn'), 'adminProfileTab');
+    }
+    
+    function adminAddFaculty() {
+        const name = document.getElementById('adminFacultyName').value;
+        const email = document.getElementById('adminFacultyEmail').value.toLowerCase();
+        const pass = document.getElementById('adminFacultyPass').value;
+        const dept = document.getElementById('adminFacultyDept').value;
+        const phone = document.getElementById('adminFacultyPhone').value;
+        const office = document.getElementById('adminFacultyOffice').value;
+        const subjects = document.getElementById('adminFacultySubjects').value.split(',').map(s => s.trim());
+        const msg = document.getElementById('adminFacultyMsg');
+        
+        if (!name || !email || !pass) {
+            msg.className = 'msg-error';
+            msg.textContent = "Please fill Name, Email, and Password.";
+            return;
+        }
+        
+        if (credentials.faculty[email]) {
+            msg.className = 'msg-error';
+            msg.textContent = "This email is already registered.";
+            return;
+        }
+        
+        // Add to our local variable
+        credentials.faculty[email] = {
+            pass: pass,
+            name: name,
+            dept: dept,
+            phone: phone,
+            office: office,
+            subjects: subjects
+        };
+        
+        // --- NEW: Save the credentials database ---
+        saveCredentialsDatabase();
+        
+        msg.className = 'msg-success';
+        msg.textContent = `Successfully added ${name}.`;
+        
+        // Clear all fields
+        document.getElementById('adminFacultyName').value = '';
+        document.getElementById('adminFacultyEmail').value = '';
+        document.getElementById('adminFacultyPass').value = '';
+        document.getElementById('adminFacultyPhone').value = '';
+        document.getElementById('adminFacultyOffice').value = '';
+        document.getElementById('adminFacultySubjects').value = '';
+        
+        loadFacultyList();
+    }
+    
+    function loadFacultyList() {
+        const listContainer = document.getElementById('adminFacultyList');
+        let html = `
+          <div style="overflow-x:auto;">
+          <table>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th>Phone</th>
+              <th>Office</th>
+              <th>Subjects</th>
+            </tr>`;
+        
+        for (const email in credentials.faculty) {
+            const user = credentials.faculty[email];
+            html += `
+              <tr>
+                <td>${user.name}</td>
+                <td>${email}</td>
+                <td>${user.dept}</td>
+                <td>${user.phone || 'N/A'}</td>
+                <td>${user.office || 'N/A'}</td>
+                <td>${user.subjects ? user.subjects.join(', ') : 'N/A'}</td>
+              </tr>`;
+        }
+        
+        html += '</table></div>';
+        listContainer.innerHTML = html;
+    }
+
+    function showTab(btn, tabId) {
+      btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      document.getElementById(tabId).parentNode.querySelectorAll('.tab-content').forEach(tab => {
+          tab.classList.remove('active');
+          tab.style.display = 'none';
+      });
+      
+      document.getElementById(tabId).classList.add('active');
+      document.getElementById(tabId).style.display = 'block';
+    }
+
+    function logout() {
+      document.getElementById('logoutBtn').style.display = "none";
+      showSection('home');
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('role').value = '';
+    }
+
+    // --- This is the most important part ---
+    // When the page loads, run these two functions
+    
+    // 1. Load all data from browser memory
+    loadDatabase();
+    // 2. Show the home section
+    showSection('home');
+    
+  </script>
+</body>
+</html>
